@@ -1,7 +1,8 @@
 class User < ActiveRecord::Base
   devise :omniauthable, :api_token_authenticatable
 
-  has_many :tokens
+  has_many :tokens, :dependent => :destroy
+  has_many :repositories, :dependent => :destroy
 
   after_create :create_a_token
 
@@ -23,5 +24,3 @@ class User < ActiveRecord::Base
       self.tokens.create!
     end
 end
-
-

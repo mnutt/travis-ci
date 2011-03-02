@@ -3,7 +3,8 @@ class Build < ActiveRecord::Base
 
   class << self
     def create_from_github_payload(data)
-      repository = Repository.find_or_create_by_url(data['repository']['url'])
+      user       = User.find_by_name(data['repository']['owner']['name'])
+      repository = Repository.find_or_create_by_name(data['repository']['name'])
       commit     = data['commits'].last
       author     = commit['author'] || {}
       committer  = commit['committer'] || author || {}
