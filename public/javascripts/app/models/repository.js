@@ -66,8 +66,8 @@ Travis.Collections.Repositories = Backbone.Collection.extend({
     args.success = function() { this.trigger('repositories:load:done'); if(success) success(arguments); }.bind(this);
     Backbone.Collection.prototype.fetch.apply(this, [args]);
   },
-  findByName: function(name) {
-    return this.detect(function(item) { return item.get('name') == name }, this); // TODO use an index?
+  findByLoginAndName: function(username, name) {
+    return this.detect(function(item) { return item.get('user').login == username && item.get('name') == name }, this); // TODO use an index?
   },
   last: function() {
     return this.models[this.models.length - 1];

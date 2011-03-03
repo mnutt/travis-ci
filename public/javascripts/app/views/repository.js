@@ -50,7 +50,7 @@ Travis.Views.Repository = Backbone.View.extend({
     }.bind(this));
   },
   _updateTitle: function() {
-    $('.repository h3 a', this.element()).attr('href', this.model.get('url')).html(this.model.get('name'));
+    $('.repository h3 a', this.element()).attr('href', this.model.get('url')).html(this.model.get('user').login + '/' + this.model.get('name'));
   },
   _updateTabs: function() {
     this.currentView.updateTab(this.model);
