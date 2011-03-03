@@ -1,5 +1,5 @@
 <li id="repository_{{id}}" class="repository {{build/color}}">
-  <a href="/#!/{{user/login}}/{{name}}">{{name}}</a>
+  <a href="/#!/{{user/login}}/{{name}}">{{user/login}}/{{name}}</a>
   {{#build}}
     <a href="/#!/{{../user/login}}/{{../name}}/builds/{{id}}" class="build">#{{number}}</a>
     <p class="summary">
