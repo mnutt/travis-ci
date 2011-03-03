@@ -11,8 +11,9 @@ class Repository < ActiveRecord::Base
   validates :user_id, :presence => true
   validates :url, :presence => true, :uniqueness => true
 
-  REPOSITORY_ATTRS = [:id, :name, :url, :last_duration]
-  LAST_BUILD_ATTRS = [:id, :number, :commit, :message, :status, :log, :started_at, :finished_at, :author_name, :author_email, :committer_name, :committer_email]
+  REPOSITORY_ATTRS = [ :id, :name, :url, :last_duration ]
+  LAST_BUILD_ATTRS = [ :id, :number, :commit, :message, :status, :log, :started_at, :finished_at, :author_name, :author_email, :committer_name, :committer_email ]
+  USER_ATTRS       = [ :login ]
 
   class << self
     def timeline
@@ -34,7 +35,7 @@ class Repository < ActiveRecord::Base
   def as_json(options = {})
     super({
       :only => REPOSITORY_ATTRS,
-      :include => { :last_build => { :only => LAST_BUILD_ATTRS } }
+      :include => { :last_build => { :only => LAST_BUILD_ATTRS }, :user => { :only => USER_ATTRS } }
     })
   end
 end

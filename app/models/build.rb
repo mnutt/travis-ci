@@ -50,6 +50,6 @@ class Build < ActiveRecord::Base
     build_keys = [:id, :number, :commit, :message, :status, :committed_at, :author_name, :author_email, :committer_name, :committer_email]
     build_keys += [:log, :started_at, :finished_at] if options[:full]
     build_methods = []
-    super(:only => build_keys, :methods => build_methods, :include => { :repository => { :only => [:id, :name, :url, :last_duration] } })
+    super(:only => build_keys, :methods => build_methods, :include => { :repository => { :only => [ :id, :name, :url, :last_duration ], :user => { :only => [ :login ] } } })
   end
 end

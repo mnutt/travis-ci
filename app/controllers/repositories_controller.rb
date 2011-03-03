@@ -17,8 +17,10 @@ class RepositoriesController < ApplicationController
 
   protected
     def repositories
-      if params[:username] && user = User.find_by_username(params[:username])
-        user.repositories.timeline
+      if params[:username]
+        if user = User.find_by_login(params[:username])
+          user.repositories.timeline
+        end
       else
         Repository.timeline.recent
       end
