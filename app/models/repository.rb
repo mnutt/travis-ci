@@ -34,8 +34,11 @@ class Repository < ActiveRecord::Base
 
   def as_json(options = {})
     super({
-      :only => REPOSITORY_ATTRS,
-      :include => { :last_build => { :only => LAST_BUILD_ATTRS }, :user => { :only => USER_ATTRS } }
+      :only    => REPOSITORY_ATTRS,
+      :include => {
+        :last_build => { :only => LAST_BUILD_ATTRS },
+        :user       => { :only => USER_ATTRS }
+      }
     })
   end
 end

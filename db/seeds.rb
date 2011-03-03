@@ -5,10 +5,28 @@ if Rails.env != 'production'
   DatabaseCleaner.clean_with(:truncation)
 end
 
+sven = User.create!({
+  :login => "svenfuchs",
+  :email => "svenfuchs@artweb-design.de"
+})
+
+jose = User.create!({
+  :login => "josevalim",
+  :email => "jose.valim@gmail.com"
+})
+
 minimal = Repository.create!({
+  :user => sven,
   :name => 'minimal',
   :url => 'https://github.com/svenfuchs/minimal',
   :last_duration => 10
+})
+
+enginex = Repository.create!({
+  :user => jose,
+  :name => 'enginex',
+  :url => 'https://github.com/josevalim/enginex',
+  :last_duration => 30
 })
 
 Build.create!({
@@ -53,12 +71,6 @@ Build.create!({
   :started_at => '2010-11-12 13:00:00',
   :agent => '76f4f2ba',
   :log => 'minimal build 3 log ...'
-})
-
-enginex = Repository.create!({
-  :name => 'enginex',
-  :url => 'https://github.com/josevalim/enginex',
-  :last_duration => 30
 })
 
 Build.create!({

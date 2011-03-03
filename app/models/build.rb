@@ -1,6 +1,8 @@
 class Build < ActiveRecord::Base
   belongs_to :repository
 
+  validates :repository_id, :presence => true
+
   class << self
     def create_from_github_payload(data)
       user       = User.find_by_login(data['repository']['owner']['name'])
@@ -47,8 +49,8 @@ class Build < ActiveRecord::Base
   end
 
   def as_json(options = {})
-    build_keys = [:id, :number, :commit, :message, :status, :committed_at, :author_name, :author_email, :committer_name, :committer_email]
-    build_keys += [:log, :started_at, :finished_at] if options[:full]
+    build_keys    = [ :id, :number, :commit, :message, :status, :committed_at, :author_name, :author_email, :committer_name, :committer_email ]
+    build_keys   += [ :log, :started_at, :finished_at ] if options[:full]
     build_methods = []
     super(:only => build_keys, :methods => build_methods, :include => { :repository => { :only => [ :id, :name, :url, :last_duration ], :user => { :only => [ :login ] } } })
   end
