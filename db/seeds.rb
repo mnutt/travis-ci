@@ -1,4 +1,4 @@
-# encoding: utf-8 
+# encoding: utf-8
 # truncate all tables for test and development
 if Rails.env != 'production'
   require 'database_cleaner'
@@ -6,12 +6,11 @@ if Rails.env != 'production'
 end
 
 minimal = Repository.create!({
-  :username => 'svenfuchs',
-  :name => 'svenfuchs/minimal',
+  :name => 'minimal',
   :url => 'https://github.com/svenfuchs/minimal',
   :last_duration => 10
 })
-  
+
 Build.create!({
   :repository => minimal,
   :number => 1,
@@ -57,8 +56,7 @@ Build.create!({
 })
 
 enginex = Repository.create!({
-  :username => 'josevalim',
-  :name => 'josevalim/enginex',
+  :name => 'enginex',
   :url => 'https://github.com/josevalim/enginex',
   :last_duration => 30
 })

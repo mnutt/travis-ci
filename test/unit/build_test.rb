@@ -31,8 +31,8 @@ class BuildTest < ActiveSupport::TestCase
       'author_email' => nil,
       :repository => {
         'id' => build.repository.id,
-        'name' => 'svenfuchs/minimal',
-        'url' => 'http://github.com/svenfuchs/minimal',
+        'name' => 'minimal',
+        'url' => "http://github.com/#{build.repository.user.login}/#{build.repository.name}",
         'last_duration' => 60,
       }
     }
@@ -57,8 +57,8 @@ class BuildTest < ActiveSupport::TestCase
       'author_email' => nil,
       :repository => {
         'id' => build.repository.id,
-        'name' => 'svenfuchs/minimal',
-        'url' => 'http://github.com/svenfuchs/minimal',
+        'name' => 'minimal',
+        'url' => "http://github.com/#{build.repository.user.login}/#{build.repository.name}",
         'last_duration' => 60,
       }
     }

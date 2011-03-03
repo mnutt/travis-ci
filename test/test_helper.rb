@@ -33,7 +33,15 @@ end
 GITHUB_PAYLOADS = {
   "gem-release" => %({
     "repository": {
-      "url": "http://github.com/svenfuchs/gem-release"
+      "name": "gem-release",
+      "url": "http://github.com/svenfuchs/gem-release",
+      "description": "Lorem ipsum dolor sit amet.",
+      "homepage": "http://google.com",
+      "private": false,
+      "owner": {
+        "name": "svenfuchs",
+        "email": "svenfuchs@artweb-design.de"
+      }
     },
     "commits": [{
       "id":        "9854592",
@@ -55,7 +63,7 @@ RESQUE_PAYLOADS = {
   'gem-release' => {
     'repository' => {
       'id' => 1,
-      'name' => 'svenfuchs/gem-release',
+      'name' => 'gem-release',
       'url' => 'http://github.com/svenfuchs/gem-release',
       'last_duration' => nil
     },

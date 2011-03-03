@@ -4,6 +4,8 @@ class User < ActiveRecord::Base
   has_many :tokens, :dependent => :destroy
   has_many :repositories, :dependent => :destroy
 
+  validates :login, :uniqueness => true
+
   after_create :create_a_token
 
   def self.find_for_github_oauth(user_hash)

@@ -1,10 +1,10 @@
 class RefactorUsernameToUserId < ActiveRecord::Migration
   def self.up
-    add_column :repositories, :user_id, :integer, :null => false
+    add_column :repositories, :user_id, :integer
     add_index :repositories, :user_id
 
     Repository.find_each do |repository|
-      user = User.find_by_username(repository.username)
+      user = User.find_by_name(repository.username)
       repository.update_attribute(:user_id, user.id)
     end
 

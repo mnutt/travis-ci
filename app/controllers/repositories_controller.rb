@@ -17,7 +17,11 @@ class RepositoriesController < ApplicationController
 
   protected
     def repositories
-      params[:username] ? Repository.where(:username => params[:username]).timeline : Repository.timeline.recent
+      if params[:username] && user = User.find_by_username(params[:username])
+        user.repositories.timeline
+      else
+        Repository.timeline.recent
+      end
     end
 
     def repository

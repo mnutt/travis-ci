@@ -8,6 +8,9 @@ class Repository < ActiveRecord::Base
   has_one :last_failure,        :class_name => 'Build', :order => 'started_at DESC', :conditions => { :status => 1 }
   belongs_to :user
 
+  validates :user_id, :presence => true
+  validates :url, :presence => true, :uniqueness => true
+
   REPOSITORY_ATTRS = [:id, :name, :url, :last_duration]
   LAST_BUILD_ATTRS = [:id, :number, :commit, :message, :status, :log, :started_at, :finished_at, :author_name, :author_email, :committer_name, :committer_email]
 

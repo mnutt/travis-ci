@@ -1,9 +1,12 @@
-FactoryGirl.define do
+Factory.sequence :login do |n|
+  "svenfuchs#{n}"
+end
 
+FactoryGirl.define do
   factory :repository do
-    username 'svenfuchs'
-    name { "#{username}/minimal" }
-    url  { "http://github.com/#{name}" }
+    user { Factory(:user) }
+    name "minimal"
+    url  { |r| "http://github.com/#{r.user.login}/#{r.name}" }
     last_duration 60
     last_built_at { Time.utc(2011, 01, 30, 5, 30) }
     created_at    { last_built_at - 5.minutes }
@@ -17,8 +20,7 @@ FactoryGirl.define do
 
   factory :user do
     name  'Sven Fuchs'
-    login 'svenfuchs'
+    login { Factory.next :login }
     email 'sven@fuchs.com'
   end
-
 end
