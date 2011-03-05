@@ -8,6 +8,9 @@ Travis.Models.Repository = Backbone.Model.extend({
 
     delete this.attributes.last_build;
   },
+  path: function() {
+    return this.user.get('login') + '/' + this.get('name');
+  },
   set: function(attributes) {
     attributes = _.clone(attributes);
     var build = attributes.last_build;
@@ -15,6 +18,10 @@ Travis.Models.Repository = Backbone.Model.extend({
     if(this.builds) {
       this.builds.set(build);
     }
+    if(!this.user || attributes.user) {
+      this.user = new Travis.Models.User(attributes.user || {});
+    }
+    delete attributes.user;
     Backbone.Model.prototype.set.apply(this, [attributes]);
   },
   isBuilding: function() {
@@ -25,7 +32,8 @@ Travis.Models.Repository = Backbone.Model.extend({
     return this.get('selected');
   },
   toJSON: function(options) {
-    var data = Backbone.Model.prototype.toJSON.apply(this)
+    // var data = Backbone.Model.prototype.toJSON.apply(this);
+    var data = _.extend(Backbone.Model.prototype.toJSON.apply(this), { user: this.user.toJSON() });
     if(options == undefined) options = { includeBuild: true }
     return options.includeBuild ? _.extend(data, { build: this.builds.last().toJSON() }) : data;
   },
@@ -67,7 +75,7 @@ Travis.Collections.Repositories = Backbone.Collection.extend({
     Backbone.Collection.prototype.fetch.apply(this, [args]);
   },
   findByLoginAndName: function(username, name) {
-    return this.detect(function(item) { return item.get('user').login == username && item.get('name') == name }, this); // TODO use an index?
+    return this.detect(function(item) { return item.user.get('login') == username && item.get('name') == name }, this); // TODO use an index?
   },
   last: function() {
     return this.models[this.models.length - 1];

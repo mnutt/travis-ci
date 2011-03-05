@@ -15,10 +15,10 @@ Travis.Views.Repositories = Travis.Views.Base.List.extend({
     Travis.Views.Base.List.prototype.connect.apply(this, arguments);
     collection.bind('change:selected', this.updateStatus);
   },
-  itemAdded: function() {
-    Travis.Views.BaseList.prototype.itemAdded.apply(this);
-    this.updateStatus();
-  },
+  // elementAdded: function() {
+  //   Travis.Views.Base.List.prototype.elementAdded.apply(this);
+  //   this.updateStatus();
+  // },
   collectionRefreshed: function() {
     Travis.Views.Base.List.prototype.collectionRefreshed.apply(this, arguments);
     this.element().updateTimes();

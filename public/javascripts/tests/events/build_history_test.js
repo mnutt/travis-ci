@@ -2,9 +2,11 @@ describe('Events:', function() {
   describe('on the build history view', function() {
     beforeEach(function() {
       this.repository = INIT_DATA.repositories[1];
-      goTo('#!/' + this.repository.name + '/builds')
-      waitsFor(buildTabActive(this.repository.name, 'history'));
-      waitsFor(buildTabLoaded(this.repository.name, 'history'));
+      this.repository_path = this.repository.user.login + '/' + this.repository.name;
+
+      goTo('#!/' + this.repository_path + '/builds')
+      waitsFor(buildTabActive(this.repository_path, 'history'), 'the "history" tab being activated');
+      waitsFor(buildTabLoaded(this.repository_path, 'history'), 'the "history" tab being loaded');
       waitsFor(buildHistoryTimesUpdated(), 1000, 'the build history timestamps have been updated to relative times in words');
     });
 

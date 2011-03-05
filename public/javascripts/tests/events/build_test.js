@@ -4,9 +4,11 @@ describe('Events:', function() {
 
     beforeEach(function() {
       this.repository = INIT_DATA.repositories[1];
-      goTo('#!/' + this.repository.name + '/builds/' + this.repository.last_build.id)
+      this.repository_path = this.repository.user.login + '/' + this.repository.name;
+
+      goTo('#!/' + this.repository_path + '/builds/' + this.repository.last_build.id)
       waitsFor(repositoriesListPopulated(1));
-      waitsFor(buildTabActive(this.repository.name, 'build'));
+      waitsFor(buildTabActive(this.repository_path, 'build', 'the "history" tab being activated'));
     });
 
     describe('an incoming event for the current build', function() {

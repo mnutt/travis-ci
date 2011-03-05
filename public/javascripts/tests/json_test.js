@@ -29,27 +29,30 @@ describe('Json API', function() {
       expect(build.finished_at).toEqual('2010-11-11T12:00:20Z');
       expect(build.log).toEqual('enginex build 1 log ...');
 
-      expect(build.commit).toEqual('565294c');
+      expect(build.commit).toEqual('565294c05913cfc23230');
       expect(build.message).toEqual('Update Capybara');
       expect(build.committed_at).toEqual('2010-11-11T11:58:00Z');
       expect(build.committer_name).toEqual('Jose Valim');
       expect(build.committer_email).toEqual('jose@email.com');
 
-      expect(build.repository.name).toEqual('josevalim/enginex');
+      expect(build.repository.name).toEqual('enginex');
       expect(build.repository.url).toEqual('https://github.com/josevalim/enginex');
       expect(build.repository.last_duration).toEqual(30);
+      expect(build.repository.user.login).toEqual('josevalim');
     });
   });
 
   function expectRepositoryMinimal(repository) {
-    expect(repository.name).toEqual('svenfuchs/minimal');
+    expect(repository.name).toEqual('minimal');
     expect(repository.last_build.number).toEqual(3);
     expect(repository.last_build.started_at).toBeDefined();
+    expect(repository.user.login).toEqual('svenfuchs');
   }
 
   function expectRepositoryEnginex(repository) {
-    expect(repository.name).toEqual('josevalim/enginex');
+    expect(repository.name).toEqual('enginex');
     expect(repository.last_build.number).toEqual(1);
     expect(repository.last_build.started_at).toBeDefined();
+    expect(repository.user.login).toEqual('josevalim');
   }
 });

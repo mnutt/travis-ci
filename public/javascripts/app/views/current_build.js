@@ -18,6 +18,6 @@ Travis.Views.CurrentBuild = Travis.Views.Build.extend({
     this.element().activateTab('current');
   },
   updateTab: function(repository) {
-    $('h5 a', this.element().closest('li')).attr('href', '#!/' + repository.get('user').login + '/' + repository.get('name'));
+    $('h5 a', this.element().closest('li')).attr('href', '#!/' + repository.user.get('login') + '/' + repository.get('name'));
   },
 });

@@ -20,9 +20,12 @@ var buildQueuedData = function(repository, data) {
     'enqueued_at': '2011-01-12T15: 32: 54.706695Z',
     'commit': '565294c',
     'repository': {
-      'name': 'josevalim/enginex',
+      'name': 'enginex',
       'url': 'https: //github.com/josevalim/enginex',
-      'id': 524108036
+      'id': 524108036,
+      'user': {
+        'login': 'josevalim'
+      }
     },
     'meta_id': '4085042bf6ef34d92420036ce2793b7361cd0bd4',
     'id': 143915106
@@ -41,9 +44,12 @@ var newRepositoryData = function() {
     finished_at: null,
     repository:  {
       id: 1,
-      name: 'svenfuchs/gem-release',
+      name: 'gem-release',
       url: 'http://github.com/svenfuchs/gem-release',
       lastDuration: 10,
+      'user': {
+        'login': 'svenfuchs'
+      }
     }
   };
 }

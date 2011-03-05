@@ -30,6 +30,6 @@ Travis.Views.Builds = Travis.Views.Base.List.extend({
     $('tr#builds_' + build.id, this.element()).html($(this.templates.item(build.toJSON())));
   },
   updateTab: function(repository) {
-    $('h5 a', this.element().closest('li')).attr('href', '#!/' + repository.get('user').login + '/' + repository.get('name') + '/builds');
+    $('h5 a', this.element().closest('li')).attr('href', '#!/' + repository.user.get('login') + '/' + repository.get('name') + '/builds');
   },
 });

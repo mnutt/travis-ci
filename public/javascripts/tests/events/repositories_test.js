@@ -2,7 +2,9 @@ describe('Events:', function() {
   describe('on the repository view (current build tab)', function() {
     beforeEach(function() {
       this.repository = INIT_DATA.repositories[1];
-      goTo('#!/' + this.repository.name)
+      this.repository_path = this.repository.user.login + '/' + this.repository.name;
+
+      goTo('#!/' + this.repository_path)
       waitsFor(repositoriesListPopulated(1));
     });
 
@@ -33,6 +35,7 @@ describe('Events:', function() {
           this.data = buildStartedData(this.repository);
           Travis.app.trigger('build:started', this.data)
           this.data.repository.name = this.repository.name;
+          this.data.repository.user = this.repository.user;
           waits(700) // hu
         });
 

@@ -1,13 +1,13 @@
 var itAddsTheRepositoryToTheRepositoriesCollection = function() {
   it('adds the repository to the repositories collection', function() {
     // console.log(Travis.app.repositories.map(function(a) { return a.get('name') }))
-    expect(Travis.app.repositories.last().get('name')).toEqual('svenfuchs/gem-release');
+    expect(Travis.app.repositories.last().get('name')).toEqual('gem-release');
   });
 };
 
 var itMovesTheRepositoryToTheTopOfTheRepositoriesList = function() {
   it('prepends the repository to the repositories list', function() {
-    expectText('#repositories .repository:nth-of-type(1) a:nth-of-type(1)', this.data.repository.name)
+    expectText('#repositories .repository:nth-of-type(1) a:nth-of-type(1)', this.data.repository.user.login + '/' + this.data.repository.name)
   });
 };
 
