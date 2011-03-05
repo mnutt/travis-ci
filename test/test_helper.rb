@@ -65,7 +65,8 @@ RESQUE_PAYLOADS = {
       'id' => 1,
       'name' => 'gem-release',
       'url' => 'http://github.com/svenfuchs/gem-release',
-      'last_duration' => nil
+      'last_duration' => nil,
+      'user' => { 'login' => 'svenfuchs' }
     },
     'id' => 1,
     'number' => 1,

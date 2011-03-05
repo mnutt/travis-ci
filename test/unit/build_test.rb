@@ -36,6 +36,7 @@ class BuildTest < ActiveSupport::TestCase
         'name' => 'minimal',
         'url' => "http://github.com/#{build.repository.user.login}/#{build.repository.name}",
         'last_duration' => 60,
+        :user => { 'login' => 'svenfuchs' }
       }
     }
     assert_equal expected, build.as_json
@@ -62,6 +63,7 @@ class BuildTest < ActiveSupport::TestCase
         'name' => 'minimal',
         'url' => "http://github.com/#{build.repository.user.login}/#{build.repository.name}",
         'last_duration' => 60,
+        :user => { 'login' => 'svenfuchs' }
       }
     }
     assert_equal expected, build.as_json(:full => true)

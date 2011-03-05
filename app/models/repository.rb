@@ -11,9 +11,9 @@ class Repository < ActiveRecord::Base
   validates :user_id, :presence => true
   validates :url, :presence => true, :uniqueness => true
 
-  REPOSITORY_ATTRS = [ :id, :name, :url, :last_duration ]
-  LAST_BUILD_ATTRS = [ :id, :number, :commit, :message, :status, :log, :started_at, :finished_at, :author_name, :author_email, :committer_name, :committer_email ]
-  USER_ATTRS       = [ :login ]
+  REPOSITORY_ATTRS = [:id, :name, :url, :last_duration]
+  LAST_BUILD_ATTRS = [:id, :number, :commit, :message, :status, :log, :started_at, :finished_at, :author_name, :author_email, :committer_name, :committer_email]
+  USER_ATTRS       = [:login]
 
   class << self
     def timeline
@@ -33,12 +33,10 @@ class Repository < ActiveRecord::Base
   end
 
   def as_json(options = {})
-    super({
-      :only    => REPOSITORY_ATTRS,
-      :include => {
-        :last_build => { :only => LAST_BUILD_ATTRS },
-        :user       => { :only => USER_ATTRS }
-      }
-    })
+    options ||= {} # ActiveSupport seems to pass nil here?
+    include_last_build = options.key?(:include_last_build) ? options[:include_last_build] : true
+    include_attrs = { :user => { :only => USER_ATTRS } }
+    include_attrs.update( :last_build => { :only => LAST_BUILD_ATTRS }) if include_last_build
+    super(:only => REPOSITORY_ATTRS, :include => include_attrs)
   end
 end
