@@ -13,12 +13,12 @@ The point of build matrices is that many open source Ruby projects need to run t
 
 A build matrix for a repository can be specified in the .travis.yml file like this:
 
-<strike><pre>
+<pre style="text-decoration: line-through;">
 # .travis.yml
 matrix:
   rvm: ["1.8.7", "1.9.2"]
   bundle_gemfile: ["test/Gemfile.rails-2.3.x", "test/Gemfile.rails-3.0.x"]
-</pre></strike>
+</pre>
 
 Ok ... that didn't work, because on 1.8.7 Hashes aren't sorted and we'd get back the matrix in reverse order randomly. So let's use Arrays like this:
 
