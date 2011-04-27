@@ -21,6 +21,7 @@ module Travis
 
     def initialize(options = {})
       @url    = options[:url] || ''
+      @private = options[:private]
       @commit = options[:commit]
       @script = options[:script]
       @config = Config.new(options[:config]) unless options[:config].blank?
@@ -121,8 +122,21 @@ module Travis
         @config_url ||= File.expand_path(".travis.yml")
       end
 
+      def private_git_url
+        uri = URI.parse(url)
+        "git@#{uri.host}:#{uri.path[1..-1]}.git"
+      end
+
+      def public_git_url
+        "#{url.gsub(%r(http://|https://), 'git://')}.git"
+      end
+
       def git_url
-        url[0..6] == 'file://' ? path : "#{url.gsub(%r(http://|https://), 'git://')}.git"
+        if url[0..6] == 'file://'
+          path
+        else
+          @private ? private_git_url : public_git_url
+        end
       end
 
       def extract_path(url)

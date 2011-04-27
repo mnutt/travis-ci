@@ -89,6 +89,11 @@ class BuildableTest < ActiveSupport::TestCase
     assert_equal 'git://github.com/svenfuchs/travis.git', buildable.git_url
   end
 
+  test 'git_url: given a github web url for a private repo it returns the private github git url' do
+    buildable = Buildable.new(:url => 'http://github.com/svenfuchs/travis-private', :private => true)
+    assert_equal 'git@github.com:svenfuchs/travis-private.git', buildable.git_url
+  end
+
   test "config_url should return the absolute path the .travis.yml file" do
     buildable = Buildable.new(:url => 'file://~/Development/projects/travis')
     assert_equal "#{File.expand_path('.')}/.travis.yml", buildable.config_url

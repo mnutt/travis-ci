@@ -41,7 +41,7 @@ module Github
   class Repository < OpenStruct
     include Api
 
-    ATTR_NAMES = [:name, :url, :owner_name, :owner_email]
+    ATTR_NAMES = [:name, :url, :owner_name, :owner_email, :private]
 
     def to_hash
       ATTR_NAMES.inject({}) { |result, name| result.merge(name => self.send(name)) }

@@ -43,6 +43,7 @@ class GithubTest < ActiveSupport::TestCase
       :name        => 'gem-release',
       :url         => 'http://github.com/svenfuchs/gem-release',
       :owner_name  => 'svenfuchs',
+      :private     => false,
       :owner_email => 'svenfuchs@artweb-design.de'
     }
     assert_equal expected, repository.to_hash
