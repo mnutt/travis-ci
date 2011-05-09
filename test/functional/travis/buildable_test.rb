@@ -119,32 +119,50 @@ class BuildableTest < ActiveSupport::TestCase
 
   test 'install: runs bundle install' do
     buildable = Buildable.new(:config => { :not => :blank })
-    buildable.expects(:execute).with(['bundle install'])
+    buildable.expects(:execute).with(['bundle install '])
     buildable.install
   end
 
   test 'install: runs bundle install w/ a gemfile prepended' do
     buildable = Buildable.new(:config => { 'gemfile' => 'gemfiles/rails-2.3.x' })
-    buildable.expects(:execute).with(["BUNDLE_GEMFILE=#{File.expand_path('gemfiles/rails-2.3.x')} bundle install"])
+    buildable.expects(:execute).with(["BUNDLE_GEMFILE=#{File.expand_path('gemfiles/rails-2.3.x')} bundle install "])
     buildable.install
   end
 
   test 'install: runs bundle install w/ env vars prepended' do
     buildable = Buildable.new(:config => { 'env' => 'FOO=bar' })
-    buildable.expects(:execute).with(['FOO=bar bundle install'])
+    buildable.expects(:execute).with(['FOO=bar bundle install '])
     buildable.install
   end
 
   test 'install: runs bundle install w/ rvm command prepended' do
     buildable = Buildable.new(:config => { 'rvm' => '1.8.7' })
-    buildable.expects(:execute).with(['rvm use 1.8.7', 'bundle install'])
+    buildable.expects(:execute).with(['rvm use 1.8.7', 'bundle install '])
     buildable.install
   end
 
   test 'install: runs bundle install w/ rvm command and env vars prepended' do
     buildable = Buildable.new(:config => { 'script' => 'rake ci', 'rvm' => '1.8.7', 'env' => 'FOO=bar' })
-    buildable.expects(:execute).with(['rvm use 1.8.7', 'FOO=bar bundle install'])
+    buildable.expects(:execute).with(['rvm use 1.8.7', 'FOO=bar bundle install '])
     buildable.install
+  end
+
+  test 'install: runs bundle install w/ bundler_args appended' do
+    buildable = Buildable.new(:config => {:bundler_args => '--binstubs'})
+    buildable.expects(:execute).with(['bundle install --binstubs'])
+    buildable.install
+  end
+
+  test 'run_script: executes before callbacks' do
+    buildable = Buildable.new(:config => { 'script' => 'rake ci' })
+    buildable.expects(:run_before_script)
+    buildable.run_script
+  end
+
+  test 'run_script: executes after callbacks' do
+    buildable = Buildable.new(:config => { 'script' => 'rake ci' })
+    buildable.expects(:run_after_script)
+    buildable.run_script
   end
 
   test 'run_script: executes the build script' do
@@ -175,6 +193,42 @@ class BuildableTest < ActiveSupport::TestCase
     buildable = Buildable.new(:config => { 'script' => 'rake ci', 'rvm' => '1.8.7', 'env' => 'FOO=bar' })
     buildable.expects(:execute).with(['rvm use 1.8.7', 'FOO=bar rake ci'])
     buildable.run_script
+  end
+
+  test 'run_before_script: executes commands' do
+    buildable = Buildable.new(:config => { 'script' => 'rake ci','before_script' => ['cmd1' , 'cmd2'] })
+    buildable.expects(:execute).with(['cmd1'])
+    buildable.expects(:execute).with(['cmd2'])
+    buildable.run_before_script
+  end
+
+  test 'run_before_script: returns if there are no commands' do
+    buildable = Buildable.new(:config => { 'script' => 'rake ci'})
+    assert_equal true, buildable.run_before_script
+  end
+
+  test 'run_before_script: prepends the env if appropriate' do
+    buildable = Buildable.new(:config => { 'script' => 'rake ci', 'rvm' => '1.8.7', 'before_script' => ['cmd1'],  'env' => 'FOO=bar' })
+    buildable.expects(:execute).with(['rvm use 1.8.7' , 'FOO=bar cmd1'])
+    buildable.run_before_script
+  end
+  
+  test 'run_after_script: executes commands' do
+    buildable = Buildable.new(:config => { 'script' => 'rake ci', 'after_script' => ['cmd1' , 'cmd2'] })
+    buildable.expects(:execute).with(['cmd1'])
+    buildable.expects(:execute).with(['cmd2'])
+    buildable.run_after_script
+  end
+
+  test 'run_after_script: returns if there are no commands' do
+    buildable = Buildable.new(:config => { 'script' => 'rake ci' })
+    assert_equal true, buildable.run_after_script
+  end
+
+  test 'run_after_script: prepends the env if appropriate' do
+    buildable = Buildable.new(:config => { 'script' => 'rake ci', 'rvm' => '1.8.7' , 'after_script' => ['cmd1'],  'env' => 'FOO=bar' })
+    buildable.expects(:execute).with(['rvm use 1.8.7','FOO=bar cmd1'])
+    buildable.run_after_script
   end
 
   test 'echoize: echo the command before executing it (1)' do
