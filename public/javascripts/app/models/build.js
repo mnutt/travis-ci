@@ -17,7 +17,7 @@ Travis.Models.Build = Travis.Models.Base.extend({
     }
     if(this.collection) {
       this.bind('change', function(build) { this.collection.trigger('change', this); });
-      this.bind('expanded', function(build) { this.collection.trigger('expanded', build); });
+      this.bind('configured', function(build) { this.collection.trigger('configured', build); });
     }
   },
   update: function(attributes) {
@@ -39,7 +39,7 @@ Travis.Models.Build = Travis.Models.Base.extend({
       this.matrix.parent = this;
       this.matrix.each(function(build) { build.repository = this.repository }.bind(this)); // wtf
       this.matrix.bind('select', function(build) { this.trigger('select', build); }.bind(this))
-      this.trigger('expanded', this);
+      this.trigger('configured', this);
     }
     delete attributes.matrix;
   },
@@ -88,8 +88,14 @@ Travis.Models.Build = Travis.Models.Base.extend({
       json['matrix'] = this.matrix.toJSON();
     }
     if(this.get('config')) {
-      json['config_table'] = _.map(this.get('config'), function(value, key) { return { key: key, value: value } } );
-      json['config'] = _.map(this.get('config'), function(value, key) { return key + ': ' + value; } ).join(', ');
+      var humanReadableConfig = {}
+      _.map(this.get('config'), function(v, k) {
+        if (_.include(Travis.DISPLAYED_KEYS, k)) {
+          humanReadableConfig[k] = v
+        }
+      })
+      json['config_table'] = _.map(humanReadableConfig, function(value, key) { return { key: key, value: value } } );
+      json['config'] = _.map(humanReadableConfig, function(value, key) { return key + ': ' + value; } ).join(', ');
     }
     return json;
   }
@@ -101,6 +107,7 @@ Travis.Collections.Builds = Travis.Collections.Base.extend({
     Travis.Collections.Base.prototype.initialize.apply(this, arguments);
     _.bindAll(this, 'url', 'dimensions', 'update');
     _.extend(this, options);
+    this.args = this.args || {};
   },
   _add: function(model, options) {
     Travis.Collections.Base.prototype._add.apply(this, arguments);
@@ -112,17 +119,28 @@ Travis.Collections.Builds = Travis.Collections.Base.extend({
       build ? build.update(attributes) : this.add(new Travis.Models.Build(attributes, { repository: this.repository }));
     }
   },
+  page: function(page) {
+    if (page) {
+      this.args.page = page;
+    }
+    return this.args.page || 1;
+  },
   url: function() {
     return '/repositories/' + this.repository.id + '/builds' + Utils.queryString(this.args);
   },
   dimensions: function() {
-    return this.models[0] ? _(this.models[0].get('config')).keys().map(function(key) { return _.capitalize(key) }) : [];
+    return this.models[0] ?
+      _.select(_(this.models[0].get('config')).keys(), function(key) {
+        return _.include(Travis.DISPLAYED_KEYS, key)
+      }).map(function(key) {
+        return _.capitalize(key)
+      }) : [];
   },
   comparator: function(build) {
     // this sorts matrix child builds below their child builds, i.e. the actual order will be like: 4, 3, 3.1, 3.2, 3.3., 2, 1
-    var number = parseInt(build.get('number'));
-    var fraction = parseFloat(build.get('number')) - number;
-    return number - fraction;
+    var number = String(build.get('number'));
+    var fraction = parseInt(number.substr(number.indexOf('.') + 1));
+    return parseInt(number) * 100000 - fraction
   }
 });
 

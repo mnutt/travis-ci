@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110503150504) do
+ActiveRecord::Schema.define(:version => 20110729094426) do
 
   create_table "builds", :force => true do |t|
     t.integer  "repository_id"
@@ -35,9 +36,12 @@ ActiveRecord::Schema.define(:version => 20110503150504) do
     t.string   "ref"
     t.string   "branch"
     t.text     "github_payload"
+    t.string   "compare_url"
+    t.string   "token"
   end
 
   add_index "builds", ["parent_id"], :name => "index_builds_on_parent_id"
+  add_index "builds", ["repository_id", "parent_id", "started_at"], :name => "index_builds_on_repository_id_and_parent_id_and_started_at"
   add_index "builds", ["repository_id"], :name => "index_builds_on_repository_id"
 
   create_table "rails_admin_histories", :force => true do |t|
@@ -57,7 +61,6 @@ ActiveRecord::Schema.define(:version => 20110503150504) do
     t.string   "name"
     t.string   "url"
     t.integer  "last_duration"
-    t.datetime "last_built_at"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "last_build_id"
@@ -66,9 +69,13 @@ ActiveRecord::Schema.define(:version => 20110503150504) do
     t.datetime "last_build_started_at"
     t.datetime "last_build_finished_at"
     t.string   "owner_name"
+    t.boolean  "is_active"
     t.string   "owner_email"
     t.boolean  "private",                :default => false
   end
+
+  add_index "repositories", ["last_build_started_at"], :name => "index_repositories_on_last_build_started_at"
+  add_index "repositories", ["owner_name", "name"], :name => "index_repositories_on_owner_name_and_name"
 
   create_table "tokens", :force => true do |t|
     t.integer  "user_id"
@@ -83,11 +90,13 @@ ActiveRecord::Schema.define(:version => 20110503150504) do
     t.string   "email"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "is_admin",   :default => false
+    t.boolean  "is_admin",           :default => false
     t.integer  "github_id"
+    t.string   "github_oauth_token"
   end
 
   add_index "users", ["github_id"], :name => "index_users_on_github_id"
+  add_index "users", ["github_oauth_token"], :name => "index_users_on_github_oauth_token"
   add_index "users", ["login"], :name => "index_users_on_login", :unique => true
 
 end

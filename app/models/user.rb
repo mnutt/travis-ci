@@ -3,36 +3,49 @@ class User < ActiveRecord::Base
 
   has_many :tokens
 
-  attr_accessible :name, :login, :email, :github_id
+  attr_accessible :name, :login, :email, :github_id, :github_oauth_token
 
   after_create :create_a_token
 
-  def self.find_for_github_oauth(user_hash)
-    data = user_hash['extra']['user_hash']
-    if user = User.find_by_github_id(data["id"])
-      user.update_attributes( User::user_data_from_github_data(data) )
-      user
-    else
-      create!(User::user_data_from_github_data(data))
-    end
-  end
+  class << self
+    def find_or_create_for_oauth(payload)
+      user_details = user_data_from_oauth(payload)
 
-  def self.user_data_from_github_data(data)
-      data.slice!(*%w{id name login email})
-      data['github_id'] = data['id']
-      data.delete 'id'
-      data
+      if user = User.find_by_github_id(user_details['github_id'])
+        user.update_attributes(user_details)
+        user.recently_signed_up = false
+        user
+      else
+        create!(user_details).tap do |user|
+          user.recently_signed_up = true
+        end
+      end
+    end
+
+    def user_data_from_oauth(payload)
+      user = payload['user_info']
+      {
+        'name'  => user['name'],
+        'email' => user['email'],
+        'login' => user['nickname'],
+        'github_id' => payload['uid'],
+        'github_oauth_token' => payload['credentials']['token']
+      }
+    end
   end
 
   def profile_image_hash
     self.email? ? Digest::MD5.hexdigest(self.email) : '00000000000000000000000000000000'
   end
 
+  attr_accessor :recently_signed_up
+  def recently_signed_up?
+    !!@recently_signed_up
+  end
+
   private
 
-    def create_a_token
-      self.tokens.create!
-    end
-
-
+  def create_a_token
+    self.tokens.create!
+  end
 end

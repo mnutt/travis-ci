@@ -4,7 +4,7 @@ var EVENT_PAYLOADS = {
   'build:started:1':  { repository: { id: 2, slug: 'josevalim/enginex'   }, build: { id: 10, number: 2, started_at: '2010-11-12T17:00:00Z', commit: '1111111', committer_name: 'Jose Valim', message: 'enginex commit', log: 'the enginex build 2 log ... ' } },
   'build:started:2':  { repository: { id: 3, slug: 'travis-ci/travis-ci' }, build: { id: 11, number: 1, started_at: '2010-11-12T17:00:00Z', commit: '2222222', committer_name: 'Sven Fuchs', message: 'minimal commit', log: 'the travis-ci build 1 log ... ' } },
   'build:started:3':  { repository: { id: 1 }, build: { id: 4, parent_id: 3 } },
-  'build:expanded':   { repository: { id: 3 }, build: { id: 11, config: { rvm: ['1.8.7', '1.9.2'] }, matrix: [ { id: 12, number: '4.1', config: { rvm: '1.8.7' } }, { id: 13, number: '4.2', config: { rvm: '1.9.2' } } ] } },
+  'build:configured': { repository: { id: 3 }, build: { id: 11, config: { rvm: ['1.8.7', '1.9.2'] }, matrix: [ { id: 12, number: '4.1', config: { rvm: '1.8.7' } }, { id: 13, number: '4.2', config: { rvm: '1.9.2' } } ] } },
   'build:log:1':      { repository: { id: 2 }, build: { id: 10, _log: 'with appended chars' } },
   'build:log:3':      { repository: { id: 1 }, build: { id: 4,  parent_id: 3, _log: 'something' } },
   'build:finished:1': { repository: { id: 2 }, build: { id: 10, status: 0, finished_at: '2010-11-12T17:00:10Z' } },
@@ -14,10 +14,12 @@ var EVENT_PAYLOADS = {
 
 describe('Events:', function() {
   beforeEach(function() {
+    stubLineNumbering();
     startApp();
   });
 
   afterEach(function() {
+    unstubLineNumbering();
     stopApp();
   });
 
@@ -34,7 +36,7 @@ describe('Events:', function() {
     });
 
     it('prepends to the jobs list view', function() {
-      expectText('#jobs li:nth-child(3)', 'svenfuchs/minimal #4');
+      expectText('.queue-builds#jobs li:nth-child(1)', 'svenfuchs/minimal #4');
     });
   });
 
@@ -105,12 +107,12 @@ describe('Events:', function() {
       });
     });
 
-    describe('build:expanded for the same repository', function() {
+    describe('build:configured for the same repository', function() {
       beforeEach(function() {
         goTo('/');
         waitsFor(repositoriesListPopulated());
         trigger('build:started', EVENT_PAYLOADS['build:started:2']);
-        trigger('build:expanded', EVENT_PAYLOADS['build:expanded']);
+        trigger('build:configured', EVENT_PAYLOADS['build:configured']);
       });
 
       it('updates the repository view to show the build matrix', function() {

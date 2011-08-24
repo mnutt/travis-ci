@@ -1,8 +1,8 @@
 module Travis
-  autoload :Buildable,    'travis/buildable'
-  autoload :Builder,      'travis/builder'
-  autoload :Config,       'travis/config'
-  autoload :Synchronizer, 'travis/synchronizer'
+  autoload :Config,        'travis/config'
+  autoload :Utils,         'travis/utils'
+  autoload :Worker,        'travis/worker'
+  autoload :Notifications, 'travis/notifications'
 
   class << self
     attr_accessor :pusher
@@ -10,5 +10,8 @@ module Travis
     def config
       @config ||= Config.new
     end
+  end
+
+  class Worker
   end
 end

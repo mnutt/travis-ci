@@ -1,43 +1,69 @@
-source 'http://rubygems.org'
+source :rubygems
 
-gem 'rails',               '~> 3.0.7'
-gem 'pg',                  '~> 0.11.0'
-gem 'SystemTimer',         '~> 1.2.3', :platforms => ['ruby_18']
-gem 'compass',             '~> 0.11.0'
-gem 'devise',              '~> 1.3.3'
-gem 'em-http-request',     '~> 0.3.0'
-gem 'em-websocket',        '~> 0.3.0'
-gem 'hoptoad_notifier',    '~> 2.4.9'
-gem 'jammit',              '~> 0.6.0'
-gem 'oa-oauth',             '= 0.2.0', :require => 'omniauth/oauth'
-gem 'pusher',              '~> 0.8.0'
-gem 'refraction',          '~> 0.2.0'
-gem 'resque',              '~> 1.15.0'
-gem 'resque-meta',         '~> 1.0.3'
-gem 'travis-ci-em-pusher', '~> 0.1.1'
-gem 'unobtrusive_flash',   '~> 0.0.2'
-gem 'yajl-ruby',           '~> 0.8.2'
+gem 'rails',             '~> 3.0.10'
+gem 'rake',              '~> 0.9.2'
+gem 'pg',                '~> 0.11.0'
+gem 'yajl-ruby',         '~> 0.8.2'
 
-gem 'rails_admin', :git => 'git://github.com/sferik/rails_admin.git', :ref => 'b9c50a44a1e21840b265'
+gem 'compass',           '~> 0.11.3'
+gem 'devise',            '~> 1.4.2'
+gem 'oa-oauth',          '~> 0.2.6'
+
+gem 'refraction',        '~> 0.2.0'
+gem 'unobtrusive_flash', '~> 0.0.2'
+gem 'pusher',            '~> 0.8.1'
+gem 'octokit',           :git => 'https://github.com/pengwynn/octokit.git', :ref => '463e08caa4f940045f7f'
+
+gem 'silent-postgres',   '~> 0.0.8'
+gem 'hoptoad_notifier',  '~> 2.4.11'
+gem 'jammit',            '~> 0.6.0'
+
+gem 'unicorn',           '~> 4.0.0', :platform => :ruby
+gem 'SystemTimer',       '~> 1.2.3', :platforms => :ruby_18
+gem 'clockwork'
+
+gem 'resque',            '~> 1.17.1'
+gem 'resque-heartbeat',  :git => 'https://github.com/svenfuchs/resque-heartbeat.git', :ref => 'ba7a89f'
+gem 'rabl',              '~> 0.3.0'
+
+gem 'jruby-openssl',     :platforms => :jruby
+
+
+gem 'newrelic_rpm',      '~> 3.1.0'
+
 
 group :test do
-  gem 'capybara'
-  gem 'cucumber-rails'
+  gem 'capybara', '~> 1.0.0'
   gem 'database_cleaner'
-  gem 'factory_girl_rails', :git => 'git://github.com/thoughtbot/factory_girl_rails.git'
-  gem 'fakeweb'
+  gem 'factory_girl'
+  gem 'factory_girl_rails'
   gem 'mocha'
   gem 'test_declarative'
-  gem 'web-socket-ruby'
-  gem 'fakeredis'
+  gem 'fakeredis', '~> 0.2.0'
+  gem 'webmock'
+
   platforms :ruby_18 do
     gem 'minitest'
     gem 'minitest_tu_shim'
   end
+end
+
+group :development, :test do
+  gem 'rspec-rails', '~> 2.6.1'
+end
+
+group :development do
   platforms :mri_18 do
+    # required as linecache uses it but does not have it as a dep
+    gem "require_relative", "~> 1.0.1"
     gem 'ruby-debug'
   end
-  platforms :mri_19 do
-    gem 'ruby-debug19'
+
+  # sadly ruby-debug19 (linecache19) doesn't
+  # work with ruby-head, but we don't use this in
+  # development so this should cover us just in case
+  unless RUBY_VERSION == '1.9.3'
+    gem 'ruby-debug19', :platforms => :mri_19
   end
 end
+

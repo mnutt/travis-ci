@@ -1,31 +1,60 @@
 class RepositoriesController < ApplicationController
-  respond_to :json
+  respond_to :json, :xml
 
   def index
-    render :json => repositories.as_json
+    @repositories = repositories
+
+    respond_with(@repositories)
   end
 
   def show
-    respond_to do |format|
-      format.json do
-        render :json => repository.as_json
-      end
-      format.png do
-        status = Repository.human_status_by(params.slice(:owner_name, :name))
-        response.headers["Expires"] = CGI.rfc1123_date(Time.now)
-        send_file(Rails.public_path + "/images/status/#{status}.png", :type => 'image/png', :disposition => 'inline')
-      end
+    @repository = repository
+
+    @repository.try(:override_last_finished_build_status!, params)
+
+    respond_with(@repository) do |format|
+      format.png { send_status_image_file }
+      format.xml { send_repository_in_xml_format }
+      format.any { @repository || not_found }
     end
   end
 
   protected
+
     def repositories
-      repos = params[:owner_name] ? Repository.where(:owner_name => params[:owner_name]).timeline : Repository.timeline.recent
-      params[:search].present? ? repos.search(params[:search]) : repos
+      @repositories ||= if params[:owner_name]
+        Repository.where(:owner_name => params[:owner_name]).timeline
+      else
+        Repository.timeline.recent
+      end
+
+      params[:search].present? ? @repositories.search(params[:search]) : @repositories
     end
 
     def repository
-      @repository ||= params[:id] ? Repository.find(params[:id]) : nil
+      @repository ||= Repository.find_by_params(params)
     end
-    helper_method :repository
+
+    def send_status_image_file
+      status = if @repository.blank?
+        Repository::STATUSES[nil]
+      else
+        @repository.last_finished_build_status_name
+      end
+      path = "#{Rails.public_path}/images/status/#{status}.png"
+      response.headers["Expires"] = CGI.rfc1123_date(Time.now)
+      send_file(path, :type => 'image/png', :disposition => 'inline')
+    end
+    
+    VALID_XML_SCHEMAS = ["cctray"]
+    
+    def send_repository_in_xml_format
+      schema_key = params[:schema].try(:downcase)
+      
+      if (schema_key && VALID_XML_SCHEMAS.include?(schema_key))
+        render "repositories/show.#{schema_key}.xml.builder"
+      else
+        @repository
+      end
+    end
 end

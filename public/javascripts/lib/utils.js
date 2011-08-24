@@ -41,28 +41,49 @@ Utils = {
       element.stop().css({ 'background-color': '', 'background-image': '' });
     }
   },
-  deansi: function(string) {
-    string = string || '';
-    string = string.replace(/\[31m/g, '<span class="red">').replace(/\[32m/g, '<span class="green">').replace(/\[0m/g, '</span>');
+  filterLog: function(string) {
+    string = Utils.stripPaths(string);
+    string = Utils.escapeHtml(string);
+    string = Utils.foldLog(string);
+    string = Deansi.parse(string);
+    string = Utils.numberLines(string);
     return string;
+  },
+  stripPaths: function(string) {
+    return string.replace(/\/tmp\/travis\/builds(\/[^\/\n]+){2}\//g, '');
+  },
+  escapeHtml: function(string) {
+    return Handlebars.Utils.escapeExpression(string);
+  },
+  escapeRuby: function(string) {
+    return string.replace(/#<(\w+.*?)>/, '#&lt;$1&gt;');
+  },
+  numberLines: function(string) {
+    var newstring = "";
+    var counter = 0;
+    _.each(string.split('\n'), function (line) {
+      counter++;
+      newstring += "<p class='line'><a class='linum' name='line" + counter + "'>" + counter+ "</a>" + line + "</p>"
+    })
+    return newstring;
   },
   foldLog: function(string) {
     string = Utils.unfoldLog(string);
-    var folds = [
-      /(^|<\/div>)(\$ git clean.*\n(?:Removing .*\n)+\n*)/m,
-      /(^|<\/div>)(\$ git fetch.*\nFrom .*\n.*)\n/m,
-      /(^|<\/div>)(\$ bundle install.*\n(?:(Fetching|Updating|Using|Installing).*?\n)*)/m,
-      /(^|<\/div>)(\$ rake db:migrate[\s\S]*(?:^== +\w+: migrated \(.*\) =+\n))\n?/m,
-      /(^|<\/div>)(\/home\/travis\/.rvm\/rubies\/.{140}.*)\n/m
-    ];
-    _.each(folds, function(fold) {
-      string = string.replace(fold, function() { return arguments[1] + '<div class="fold">' + arguments[2].trim() + '</div>'; });
+    var folds = {
+      // 'clone': /(^|<\/div>)(\$ git clone.*\r?\n(?:(Initialized|remote:|Receiving|Resolving).*?\r?\n)*)/m,
+      // 'clean':   /(^|<\\/div>)(\\$ git clean.*\\r?\\n(?:Removing .*\\r?\\n)+\\r?\\n*)/gm,
+      // 'fetch':   /(^|<\\/div>)(\\$ git fetch.*\\r?\\nFrom .*\\n.*)\\r?\\n/gm,
+      'bundle':  /(^|<\/div>)(\$ bundle install.*\r?\n*(?:(Fetching|Updating|Using|Installing|remote:|Receiving|Resolving|Unpacking).+\r?\n*)*)/gm,
+      'migrate': /(^|<\/div>)(\$ rake db:migrate[\s\S]*(?:^== +\w+: migrated \(.*\) =+\r?\n))\r?\n?/gm,
+      'exec':    /(^|<\/div>)(\/home\/([^\/]+)\/.rvm\/rubies\/\S*?\/(ruby|rbx|jruby) .*?)\r?\n/gm
+    };
+    _.each(folds, function(fold, type) {
+      string = string.replace(fold, function() { return arguments[1] + '<div class="fold ' + type + '">\n' + arguments[2].trim() + '</div>\n'; });
     });
-    string = string.replace(/([\.-_*SEF]{120})\n?/g, '$1\n')
     return string;
   },
   unfoldLog: function(string) {
-    return string.replace(/<div class="fold">([\s\S]*?)<\/div>/mg, '$1\n');
+    return string.replace(/<div class="fold \w+">([\s\S]*?)<\/div>/mg, '$1\n');
   },
   updateTimes: function(element) {
     $('.timeago', element).timeago();
@@ -94,7 +115,29 @@ Utils = {
         var url = 'http://github.com/' + repository.get('slug');
         element.find('.watchers').attr('href', url + '/watchers').text(data.repository.watchers);
         element.find('.forks').attr('href', url + '/network').text(data.repository.forks);
+        element.find('.github-admin').attr('href', url + '/admin/hooks#travis_minibucket');
       });
+    }
+  }
+}
+
+Utils.PathHelpers = {
+  repositoryPath: function(owner, name, line_number) {
+    if (line_number) {
+      // #!/:owner/:name/L:line_number
+      return "#!/" + owner + "/" + name + "/L" + line_number
+    } else {
+      // #!/:owner/:name
+      return path = "#!/" + owner + "/" + name
+    }
+  },
+  repositoryBuildPath: function(owner, name, build_id, line_number) {
+    if (line_number) {
+      //#!/:owner/:name/builds/:id/L:line_number
+      return "#!/" + owner + "/" + name + "/builds/" + build_id +"/L" + line_number
+    } else {
+      //#!/:owner/:name/builds
+      return "#!/" + owner + "/" + name + "/builds/" + build_id
     }
   }
 }
@@ -110,3 +153,22 @@ function trace() {
   }
 }
 
+window._console = console;
+/*
+ * In order to use old (default) behavior of console, please use __DEBUG__ in URL hash, or __DEBUG__ global variable
+ *   when hash is not accessible
+ */
+var console = {
+  log: function() {
+    if (/__DEBUG__/.exec(window.location.hash) || window.__DEBUG__) {
+      if (!_.isEmpty(window.__DEBUG_FILTER__)) {
+        if (_.include(arguments[0], window.__DEBUG_FILTER__)) {
+          window._console.log(arguments)
+        }
+      }
+      else {
+        window._console.log(arguments)
+      }
+    }
+  }
+}

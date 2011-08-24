@@ -66,10 +66,12 @@ var expectRepositoryView = function(options) {
 
 describe('Pages:', function() {
   beforeEach(function() {
+    stubLineNumbering();
     startApp();
   });
 
   afterEach(function() {
+    unstubLineNumbering();
     stopApp();
   });
 

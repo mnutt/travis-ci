@@ -1,19 +1,19 @@
-require 'test_helper_rails'
+require 'test_helper'
 
 class BuildsControllerTest < ActionDispatch::IntegrationTest
-  include GithubApiTestHelper
+  include TestHelpers::GithubApiTestHelper
 
   attr_reader :channel, :build
 
   def setup
     super
+
     flush_redis
 
-    @build = Factory(:build).reload
-    @channel = Mocks::Channel.new
-    Pusher.stubs(:[]).returns(channel)
+    @build   = Factory(:build).reload
+    @channel = TestHelpers::Mocks::Channel.new
 
-    EventMachine.stubs(:add_timer)
+    Pusher.stubs(:[]).returns(channel)
   end
 
   test 'POST to /builds (ping from github) creates a build record and a build job and sends a build:queued event to Pusher' do
@@ -37,6 +37,7 @@ class BuildsControllerTest < ActionDispatch::IntegrationTest
   test 'POST to /builds (ping from github) does not create a build record when the branch is gh_pages' do
     assert_no_difference('Build.count') do
       post '/builds', { :payload => GITHUB_PAYLOADS['gh-pages-update'] }, 'HTTP_AUTHORIZATION' => credentials
+      post '/builds', { :payload => GITHUB_PAYLOADS['gh_pages-update'] }, 'HTTP_AUTHORIZATION' => credentials
     end
   end
 
@@ -49,26 +50,24 @@ class BuildsControllerTest < ActionDispatch::IntegrationTest
     start_from_worker!
     assert_build_started
     assert_equal ['build:started', {
-      'repository' => {
-        'id' => build.repository.id,
-        :slug => 'svenfuchs/minimal',
-        'last_build_id' => build.id,
-        'last_build_number' => '1',
-        'last_build_status' => nil,
-        'last_build_started_at' => build.started_at,
-        'last_build_finished_at' => nil
-      },
       'build' => {
-        'id' => build.id,
-        'repository_id' => build.repository.id,
-        'number' => '1',
-        'commit' => '62aae5f70ceee39123ef',
         'branch' => 'master',
-        'message' => 'the commit message',
-        'committer_name' => 'Sven Fuchs',
+        'commit' => '62aae5f70ceee39123ef',
         'committer_email' => 'svenfuchs@artweb-design.de',
-        'started_at' => build.started_at,
-      },
+        'committer_name' => 'Sven Fuchs',
+        'id' => 1,
+        'message' => 'the commit message',
+        'number' => '1',
+        'repository_id' => 1,
+        'started_at' => build.started_at},
+      'repository' => {
+        'id' => 1,
+        'last_build_finished_at' => build.finished_at,
+        'last_build_id' => 1,
+        'last_build_number' => '1',
+        'last_build_started_at' => build.started_at,
+        'last_build_status' => 0,
+        :slug=>'svenfuchs/minimal'},
       'msg_id' => '1'
     }], channel.messages.first
   end
@@ -115,6 +114,41 @@ class BuildsControllerTest < ActionDispatch::IntegrationTest
 
   test 'PUT to /builds/:id finishes a matrix build' do
     # TODO
+  end
+
+  test "PUT to /builds/:id with unrecognized build attribute queue is removed from build before updating attributes" do
+    payload = WORKER_PAYLOADS[:started].merge('msg_id' => 0)
+    payload['build'] = payload['build'].merge('queue' => 'builds')
+
+    authenticated_put(build_path(build), payload)
+
+    build.reload
+
+    assert_build_started
+
+    assert_equal ['build:started', {
+      'repository' => {
+        'id' => build.repository.id,
+        :slug => 'svenfuchs/minimal',
+        'last_build_id' => build.id,
+        'last_build_number' => '1',
+        'last_build_status' => 0,
+        'last_build_started_at' => build.started_at,
+        'last_build_finished_at' => build.finished_at,
+      },
+      'build' => {
+        'id' => build.id,
+        'repository_id' => build.repository.id,
+        'number' => '1',
+        'commit' => '62aae5f70ceee39123ef',
+        'branch' => 'master',
+        'message' => 'the commit message',
+        'committer_name' => 'Sven Fuchs',
+        'committer_email' => 'svenfuchs@artweb-design.de',
+        'started_at' => build.started_at,
+      },
+      'msg_id' => '0'
+    }], channel.messages.first
   end
 
   test 'walkthrough from Github ping to finished build' do

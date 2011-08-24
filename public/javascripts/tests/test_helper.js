@@ -118,3 +118,13 @@ var normalizeHash = function(hash) {
   return hash.replace(/#|!|\//) == '' ? '' : hash;
 };
 
+var stubLineNumbering = function () {
+  Utils.originalNumberLines = Utils.numberLines;
+  Utils.numberLines = function(string) {
+    return string;
+  }
+}
+
+var unstubLineNumbering = function () {
+  Utils.numberLines = Utils.originalNumberLines;
+}

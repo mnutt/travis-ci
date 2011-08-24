@@ -1,6 +1,6 @@
 Travis.Views.Build.Build = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'attachTo', 'buildSelected', 'buildExpanded', 'updateTab');
+    _.bindAll(this, 'attachTo', 'buildSelected', 'buildConfigured', 'updateTab');
     _.extend(this, this.options);
 
     this.el = $('<div></div>');
@@ -29,20 +29,20 @@ Travis.Views.Build.Build = Backbone.View.extend({
   },
   detachFromBuild: function() {
     if(this.build) {
-      this.build.unbind('expanded', this.buildExpanded);
+      this.build.unbind('configured', this.buildConfigured);
     }
   },
   attachToBuild: function(build) {
     this.build = build;
     this.detachFromBuild();
-    this.build.bind('expanded', this.buildExpanded);
+    this.build.bind('configured', this.buildConfigured);
   },
   buildSelected: function(build) {
     this.attachToBuild(build);
     this._update();
     this.updateTab();
   },
-  buildExpanded: function(build) {
+  buildConfigured: function(build) {
     this.build = build;
     this._update();
   },
@@ -59,14 +59,21 @@ Travis.Views.Build.Build = Backbone.View.extend({
     if(this.build) {
       this.el.empty();
       this._renderSummary();
-      this.build.matrix ? this._renderMatrix() : this._renderLog();
+      if (this.build.matrix) {
+          this._renderMatrix();
+      } else {
+        this._renderLog();
+      }
     }
   },
   _renderSummary: function() {
-    this.el.append(new Travis.Views.Build.Summary({ model: this.build }).render().el);
+    this.el.append(new Travis.Views.Build.Summary({ model: this.build, parent: this }).render().el);
   },
   _renderLog: function() {
-    this.el.append(new Travis.Views.Build.Log({ model: this.build }).render().el);
+    this.log = new Travis.Views.Build.Log({ model: this.build, parent: this })
+    this.el.append(this.log.render().el);
+    this.log.initializeEvents();
+    this.log.activateCurrentLine();
   },
   _renderMatrix: function() {
     this.el.append(new Travis.Views.Build.Matrix.Table({ builds: this.build.matrix }).render().el);

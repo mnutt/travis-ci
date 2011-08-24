@@ -5,13 +5,20 @@ Travis.Models.Repository = Travis.Models.Base.extend({
     this.builds = this.builds || new Travis.Collections.Builds([], { repository: this });
   },
   url: function() {
-    return '/repositories/' + this.id;
+    if (this.id) {
+      return '/repositories/' + this.id;
+    } else if (this.get('slug')) {
+      return this.get('slug') + '.json';
+    } else {
+      return '/repositories'
+    }
   },
   set: function(attributes) { // TODO rename to update, add unit tests
     this.builds = this.builds || new Travis.Collections.Builds([], { repository: this });
     if(attributes.build) this.builds.update(attributes.build);
     delete attributes.build;
     Backbone.Model.prototype.set.apply(this, [attributes]);
+    return this;
   },
   color: function() {
     var status = this.get('last_build_status');
@@ -32,7 +39,16 @@ Travis.Collections.Repositories = Travis.Collections.Base.extend({
   model: Travis.Models.Repository,
   initialize: function(models) {
     Travis.Collections.Base.prototype.initialize.apply(this, arguments);
-    _.bindAll(this, 'url', 'update');
+    _.bindAll(this, 'url', 'update', 'setFilter');
+    this.options = {}
+  },
+  setFilter: function(filter) {
+    if (_.any(filter)) {
+      this.options.search = filter;
+    } else {
+      delete this.options.search;
+    }
+    return this;
   },
   url: function() {
     return '/repositories' + Utils.queryString(this.options);
@@ -40,9 +56,15 @@ Travis.Collections.Repositories = Travis.Collections.Base.extend({
   update: function(attributes) {
     attributes = _.extend(_.clone(attributes), { build: _.clone(attributes.build) });
     var repository = this.get(attributes.id);
-    repository ? repository.set(attributes) : this.add(new Travis.Models.Repository(attributes));
+
+    if (repository) {
+      repository.set(attributes)
+    } else if (_.isEmpty(this.options.search)) {
+      this.add(new Travis.Models.Repository(attributes));
+    }
   },
   comparator: function(repository) {
     return repository.get('last_build_started_at');
   }
 });
+

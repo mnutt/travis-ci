@@ -1,7 +1,8 @@
 var Travis = {
-  Controllers: {}, Collections: {}, Helpers: {}, Models: {}, Views: { Base: {}, Build: { History: {}, Matrix: {} }, Jobs: {}, Repositories: {}, Repository: {}, Workers: {} },
+  // Namespace initialization
+  Controllers: {}, Collections: {}, Helpers: {}, Models: {}, Views: { Base: {}, ServiceHooks: {}, Build: { History: {}, Matrix: {} }, Jobs: {}, Repositories: {}, Repository: {}, Workers: {} },
   start: function() {
-    Travis.templates = Utils.loadTemplates();
+    Travis.templates = JST;
     Backbone.history = new Backbone.History;
     Travis.app = new Travis.Controllers.Application();
     Travis.app.run();
@@ -22,14 +23,15 @@ var Travis = {
 };
 
 $(document).ready(function() {
-  if(!window.__TESTING__ && $('#application').length == 1) {
+  if(!window.__TESTING__ && $('#home').length == 1) {
+
     Travis.start();
     Backbone.history.start();
 
     var channels = ['repositories', 'jobs'];
     _.each(channels, function(channel) { pusher.subscribe(channel).bind_all(Travis.receive); })
   } else {
-    Travis.templates = Utils.loadTemplates();
+    Travis.templates = JST;
   }
 
   $('#top .profile').mouseover(function() { $('#top .profile ul').show(); });
@@ -38,7 +40,7 @@ $(document).ready(function() {
   $('.tool-tip').tipsy({ gravity: 'n', fade: true });
   $('.fold').live('click', function() { $(this).hasClass('open') ? $(this).removeClass('open') : $(this).addClass('open'); })
 
-  if(env == 'development') {
+  if(env == 'development' && $("body").id == 'home') {
     $('#jobs').after(Travis.templates['tools/events']());
     var events = {
       'build:queued':   { 'repository': { 'id': 3, 'slug': 'travis-ci/travis-ci' }, 'build': { 'id': 4, 'number': 46 } },
@@ -54,17 +56,28 @@ $(document).ready(function() {
     });
   }
 
-  $('#search input').keyup(function(e) {
-    var searchString = $(this).val();
+  $('#search input').keyup(_.debounce(function(e) {
+    Travis.app.repositories.setFilter($(this).val()).fetch()
+  }, 100));
 
-    $.ajax({
-      type: "GET",
-      url: "/repositories",
-      data: "search=" + searchString,
-      success: function(repositories) {
-        Travis.app.repositories.refresh(repositories);
-      }
-    });
+  function toggle_slider() {
+    $("#right").toggleClass('minimized');
+    $('#main').toggleClass('large');
+    $('.slider').toggleClass('toggled');
+  }
+
+  if($.cookie('slider_hidden') === 'false') {
+    toggle_slider();
+  }
+  $(".slider").click(function() {
+    $.cookie('slider_hidden', !($.cookie('slider_hidden') === 'true'));
+    toggle_slider();
+  });
+
+  // Handlebars helpers
+  Handlebars.registerHelper('compare_view_refs', function(compare_url) {
+    var parts = compare_url.split('/');
+    return parts[parts.length - 1];
   });
 });
 
@@ -103,3 +116,24 @@ $.ajaxSetup({ cache: false });
 //   });
 // });
 //
+
+// Overriden Backbone.methods for overriden fetch/sync methods
+(function(){
+  Backbone.methodMap = {
+    'create': 'POST',
+    'update': 'PUT',
+    'delete': 'DELETE',
+    'read'  : 'GET'
+  };
+  Travis.DISPLAYED_KEYS = [ 'rvm', 'gemfile', 'env', 'otp_release' ]
+  function CSRFProtection (xhr) {
+    var token = $('meta[name="csrf-token"]').attr('content');
+    if (token) xhr.setRequestHeader('X-CSRF-Token', token);
+  }
+
+  if ('ajaxPrefilter' in $) {
+    $.ajaxPrefilter(function(options, originalOptions, xhr){ if ( !options.crossDomain ) { CSRFProtection(xhr); }});
+  } else {
+    $(document).ajaxSend(function(e, xhr, options){ if ( !options.crossDomain ) { CSRFProtection(xhr); }});
+  }
+})();

@@ -1,3 +1,5 @@
+require 'travis'
+
 TravisCi::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb
 
@@ -18,7 +20,7 @@ TravisCi::Application.configure do
   # If you have no front-end server that supports something like X-Sendfile,
   # just comment this out and Rails will serve the files
 
-  # config.action_controller.logger = Logger.new(STDOUT)
+  config.logger = Logger.new(STDOUT)
   config.log_level = :debug
 
   # Use a different logger for distributed setups
@@ -34,8 +36,21 @@ TravisCi::Application.configure do
   # Enable serving of images, stylesheets, and javascripts from an asset server
   # config.action_controller.asset_host = "http://assets.example.com"
 
+  config.action_mailer.default_url_options = {
+    :host => Travis.config['domain']
+  }
+
   # Disable delivery errors, bad email addresses will be ignored
   # config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.smtp_settings = {
+    :address        => Travis.config['smtp']['address'],
+    :port           => "25",
+    :authentication => :cram_md5,
+    :user_name      => Travis.config['smtp']['user_name'],
+    :password       => Travis.config['smtp']['password'],
+    :domain         => Travis.config['smtp']['domain'],
+    :enable_starttls_auto => true
+  }
 
   # Enable threaded mode
   # config.threadsafe!
