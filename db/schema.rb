@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -27,7 +26,6 @@ ActiveRecord::Schema.define(:version => 20110729094426) do
     t.string   "committer_email"
     t.string   "author_name"
     t.string   "author_email"
-    t.string   "job_id"
     t.string   "agent"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -69,9 +67,9 @@ ActiveRecord::Schema.define(:version => 20110729094426) do
     t.datetime "last_build_started_at"
     t.datetime "last_build_finished_at"
     t.string   "owner_name"
-    t.boolean  "is_active"
-    t.string   "owner_email"
+    t.text     "owner_email"
     t.boolean  "private",                :default => false
+    t.boolean  "is_active"
   end
 
   add_index "repositories", ["last_build_started_at"], :name => "index_repositories_on_last_build_started_at"
